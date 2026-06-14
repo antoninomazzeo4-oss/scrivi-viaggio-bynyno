@@ -1,1 +1,213 @@
-
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rotta — il tuo viaggio</title>
+<style>
+  :root{--ink:#14110f;--paper:#faf6ef;--line:#d8cdbb;--road:#c0281c;--sky:#2c5f7c;--rail:#3a7d44;--muted:#7a6f60;--gold:#b8965a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:Georgia,serif;line-height:1.5;padding:0 0 60px}
+  .wrap{max-width:680px;margin:0 auto;padding:0 20px}
+  header{padding:40px 20px 28px;border-bottom:1px solid var(--line);margin-bottom:28px}
+  header .wrap{padding:0}
+  .eyebrow{font-family:Arial,sans-serif;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  h1{font-size:44px;font-weight:400;line-height:1}
+  h1 em{color:var(--road);font-style:italic}
+  .sub{margin-top:12px;color:var(--muted);font-size:15px;font-style:italic}
+  .field{margin-bottom:18px}
+  label{display:block;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  input,select{width:100%;padding:12px 14px;border:1px solid var(--line);background:#fff;font-family:Georgia,serif;font-size:16px;color:var(--ink)}
+  input:focus,select:focus{outline:none;border-color:var(--road)}
+  .row{display:flex;gap:14px}.row>*{flex:1}
+  .hint{font-size:12px;color:var(--muted);margin-top:5px;font-style:italic}
+  .kids{display:none;margin-top:10px}.kids.show{display:block}
+  .kidrow{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+  .kidrow label{margin:0;flex:0 0 auto;text-transform:none;letter-spacing:0;font-size:14px;font-family:Georgia,serif;color:var(--ink)}
+  .kidrow input{flex:1}
+  .seg{border-left:2px solid var(--line);padding-left:16px;margin-bottom:18px}
+  .seg .tag{font-family:Arial,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+  .advanced{border-top:1px solid var(--line);margin-top:8px;padding-top:20px}
+  .advanced summary{font-family:Arial,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);cursor:pointer;margin-bottom:18px;list-style:none}
+  .advanced summary::before{content:"+ ";color:var(--road)}
+  .advanced[open] summary::before{content:"- "}
+  button.go{width:100%;padding:16px;background:var(--ink);color:var(--paper);border:none;font-family:Arial,sans-serif;font-size:13px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;margin-top:14px}
+  button.go:disabled{opacity:.5}
+  .loading{display:none;text-align:center;padding:30px;font-style:italic;color:var(--muted)}
+  .loading.show{display:block}
+  .results{margin-top:36px;display:none}.results.show{display:block}
+  .err{display:none;border:1px solid var(--road);background:#fff;padding:18px;margin-top:24px;color:var(--road);font-size:14px}
+  .err.show{display:block}
+  .grandtotal{border:2px solid var(--ink);background:#fff;padding:24px;margin-bottom:28px;text-align:center}
+  .grandtotal .label{font-family:Arial,sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .grandtotal .big{font-size:38px;margin:6px 0;color:var(--road)}
+  .grandtotal .desc{font-size:13px;font-style:italic;color:var(--muted)}
+  .trip{border:1px solid var(--line);background:#fff;padding:20px;margin-bottom:16px}
+  .trip h3{font-family:Arial,sans-serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--road);margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+  .trip h3.ret{color:var(--sky)}
+  .stat{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px;gap:8px}
+  .stat .k{color:var(--muted)}.stat .v{font-weight:bold;text-align:right}
+  .leg{font-size:13px;color:var(--muted);padding:7px 0;border-bottom:1px dotted var(--line)}
+  .leg .n{font-weight:bold;color:var(--ink)}
+  .trip .sub-total{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
+  .trip .sub-total .k{font-family:Arial,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .trip .sub-total .v{font-size:20px}
+  .sosta{border:1px solid var(--gold);background:#fff;padding:20px;margin:8px 0 16px}
+  .sosta .label{font-family:Arial,sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .sosta strong{font-size:20px;font-weight:400}
+  .sosta strong em{font-style:italic;color:var(--road)}
+  .sosta p{font-size:13px;color:var(--muted);font-style:italic;margin:6px 0 12px}
+  .sosta a.bk{display:inline-block;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--gold);text-decoration:none;padding-bottom:2px;margin-right:18px}
+  .alt{margin:24px 0 8px}
+  .alt h2{font-size:13px;font-family:Arial,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+  .altcards{display:flex;gap:14px}
+  .altcard{flex:1;border:1px solid var(--line);background:#fff;padding:16px;text-align:center}
+  .altcard .m{font-family:Arial,sans-serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .altcard .m.treno{color:var(--rail)}.altcard .m.volo{color:var(--sky)}
+  .altcard .c{font-size:22px;margin:6px 0 2px}.altcard .t{font-size:12px;color:var(--muted);font-style:italic}
+  .actions h2{font-size:13px;font-family:Arial,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:28px 0 14px}
+  .link{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border:1px solid var(--line);background:#fff;text-decoration:none;color:var(--ink);margin-bottom:11px}
+  .link .name{font-size:16px}.link .desc{font-size:12px;color:var(--muted);font-style:italic;margin-top:2px}
+  .link .arrow{font-size:20px;color:var(--road)}
+  .note{font-size:12px;color:var(--muted);font-style:italic;margin-top:24px;line-height:1.6;border-top:1px solid var(--line);padding-top:16px}
+  @media(max-width:560px){h1{font-size:32px}.altcards{flex-direction:column}.row{flex-direction:column;gap:0}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="eyebrow">Il tuo viaggio</div>
+  <h1>Rotta <em>&amp;</em> costo</h1>
+  <p class="sub">Scrivi da dove parti e dove vai. Chilometri reali, consumi della Jeep, soste e confronto con treno e volo arrivano da soli.</p>
+</div></header>
+<div class="wrap">
+  <div class="field"><label>Parto da</label><input id="from" type="text" value="Kremsmunster, Austria"></div>
+  <div class="field"><label>Vado a</label><input id="to" type="text" placeholder="Es. Rimini, Italia"></div>
+  <div class="field"><label>Al ritorno</label>
+    <select id="ritornoTipo" onchange="toggleRitorno()">
+      <option value="diretto">Stessa strada dell'andata</option>
+      <option value="tappa">Passo da un'altra citta</option>
+    </select></div>
+  <div class="seg" id="segRitorno" style="display:none">
+    <div class="tag">Ritorno con tappa</div>
+    <div class="field"><label>Passo da</label><input id="ritornoVia" type="text" placeholder="Es. Crema, Italia"></div>
+  </div>
+  <div class="row">
+    <div class="field"><label>Check-in</label><input id="checkin" type="date"></div>
+    <div class="field"><label>Check-out</label><input id="checkout" type="date"></div>
+  </div>
+  <div class="row">
+    <div class="field"><label>Adulti</label><input id="adults" type="number" min="1" value="2"></div>
+    <div class="field"><label>Bambini</label><input id="children" type="number" min="0" value="0" oninput="buildKids()"></div>
+  </div>
+  <div class="kids" id="kidsBox"></div>
+  <details class="advanced">
+    <summary>Parametri auto - Jeep 1.6 diesel</summary>
+    <div class="row">
+      <div class="field"><label>Consumo (L/100km)</label><input id="consumo" type="number" step="0.1" value="6.5"></div>
+      <div class="field"><label>Prezzo diesel (EUR/L)</label><input id="prezzo" type="number" step="0.01" value="1.65"></div>
+    </div>
+    <div class="field"><label>Pedaggi + vignetta per tratta (EUR)</label><input id="pedaggio1" type="number" value="35"></div>
+    <div class="field"><label>Soglia sosta notte (ore)</label><input id="sogliaSosta" type="number" value="6"></div>
+  </details>
+  <button class="go" id="goBtn" onclick="calcola()">Calcola il viaggio</button>
+  <div class="loading" id="loading">Calcolo il percorso reale...</div>
+  <div class="err" id="err"></div>
+  <div class="results" id="results">
+    <div class="grandtotal" id="grandtotal"></div>
+    <div class="trip" id="tripAndata"></div>
+    <div class="sosta" id="sostaAndata" style="display:none"></div>
+    <div class="trip" id="tripRitorno"></div>
+    <div class="sosta" id="sostaRitorno" style="display:none"></div>
+    <div class="alt"><h2>Se non guidi</h2>
+      <div class="altcards"><div class="altcard" id="altTreno"></div><div class="altcard" id="altVolo"></div></div>
+    </div>
+    <div class="actions"><h2>Organizza</h2>
+      <a class="link" id="lkHotel" target="_blank" rel="noopener"><span><span class="name">Hotel a destinazione</span><br><span class="desc">Booking, date e ospiti impostati</span></span><span class="arrow">&rarr;</span></a>
+      <a class="link" id="lkTreno" target="_blank" rel="noopener"><span><span class="name">Treni</span><br><span class="desc">Trainline: OBB + Trenitalia</span></span><span class="arrow">&rarr;</span></a>
+      <a class="link" id="lkVoloG" target="_blank" rel="noopener"><span><span class="name">Voli</span><br><span class="desc">Google Flights</span></span><span class="arrow">&rarr;</span></a>
+      <a class="link" id="lkMaps" target="_blank" rel="noopener"><span><span class="name">Apri in Maps</span><br><span class="desc">Per la navigazione</span></span><span class="arrow">&rarr;</span></a>
+    </div>
+    <p class="note" id="note"></p>
+  </div>
+</div>
+<script>
+var ORS_KEY = eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjhmMmViYTU0N2VlYzQ1YzQ5NWRlNzI1NThkYjU3NGFkIiwiaCI6Im11cm11cjY0In0=;
+var SOSTE=[
+  {n:"Villach",c:[13.846,46.611],d:"Ultima citta austriaca prima del Tarvisio: prezzi onesti, ripartenza veloce."},
+  {n:"Udine",c:[13.235,46.063],d:"Friuli appena varcato il confine, centro elegante e osterie vere."},
+  {n:"Trento",c:[11.119,46.071],d:"Sull'asse del Brennero: citta raccolta, alberghi comodi all'uscita."},
+  {n:"Verona",c:[10.992,45.438],d:"Crocevia del nord: tanta offerta alberghiera e una sera sotto l'Arena."},
+  {n:"Bologna",c:[11.342,44.494],d:"Snodo verso il centro-sud: hotel a ogni fascia e una cena che vale la sosta."},
+  {n:"Padova",c:[11.876,45.407],d:"Veneto ben servito, vicino all'A4: pratica ed economica."},
+  {n:"Brescia",c:[10.219,45.541],d:"Sull'asse Milano-Venezia: pratica per chi taglia verso ovest."},
+  {n:"Piacenza",c:[9.693,45.052],d:"Porta dell'Emilia verso Milano: posizione strategica, prezzi contenuti."}
+];
+function eur(n){return "EUR "+Math.round(n).toLocaleString("it-IT");}
+function ore(h){var H=Math.floor(h),M=Math.round((h-H)*60);return H+"h"+(M?" "+M+"m":"");}
+function hav(a,b){var R=6371,r=function(x){return x*Math.PI/180;};var dLa=r(b[1]-a[1]),dLo=r(b[0]-a[0]);var h=Math.pow(Math.sin(dLa/2),2)+Math.cos(r(a[1]))*Math.cos(r(b[1]))*Math.pow(Math.sin(dLo/2),2);return 2*R*Math.asin(Math.sqrt(h));}
+function buildKids(){var n=+document.getElementById("children").value||0,box=document.getElementById("kidsBox");if(n<=0){box.className="kids";box.innerHTML="";return;}var html="<label>Eta dei bambini</label>";for(var i=0;i<n;i++)html+='<div class="kidrow"><label>Bambino '+(i+1)+'</label><input type="number" min="0" max="17" class="kidAge" placeholder="anni"></div>';box.innerHTML=html;box.className="kids show";}
+function toggleRitorno(){document.getElementById("segRitorno").style.display=document.getElementById("ritornoTipo").value==="tappa"?"block":"none";}
+function getKidAges(){var e=document.querySelectorAll(".kidAge"),a=[];for(var i=0;i<e.length;i++)if(e[i].value!=="")a.push(+e[i].value);return a;}
+function geocode(nome){return fetch("https://api.openrouteservice.org/geocode/search?api_key="+ORS_KEY+"&text="+encodeURIComponent(nome)+"&size=1").then(function(r){return r.json();}).then(function(d){if(d.features&&d.features.length)return d.features[0].geometry.coordinates;throw new Error("Citta non trovata: "+nome);});}
+function route(a,b){return fetch("https://api.openrouteservice.org/v2/directions/driving-car?api_key="+ORS_KEY+"&start="+a[0]+","+a[1]+"&end="+b[0]+","+b[1]).then(function(r){return r.json();}).then(function(d){if(d.features&&d.features.length){var s=d.features[0].properties.summary;return {km:s.distance/1000,h:s.duration/3600};}throw new Error("Percorso non calcolabile");});}
+function migliorSosta(A,B){var best=null,bs=Infinity,dAB=hav(A,B);for(var i=0;i<SOSTE.length;i++){var s=SOSTE[i];var dA=hav(A,s.c),dB=hav(s.c,B);var det=(dA+dB)-dAB;var fr=dA/(dA+dB);if(det>140)continue;var sc=Math.abs(fr-0.6)*400+det;if(sc<bs){bs=sc;best=s;}}return best;}
+function renderSosta(elId,A,B,t,adults,children){var box=document.getElementById(elId);var s=migliorSosta(A,B);if(!s){box.style.display="none";return;}var bk='https://www.booking.com/searchresults.it.html?ss='+encodeURIComponent(s.n)+'&group_adults='+adults+'&group_children='+children+'&no_rooms=1';var maps='https://www.google.com/maps/search/'+encodeURIComponent("ristoranti tipici "+s.n);box.innerHTML='<div class="label">Tappa notte consigliata</div><strong>Dormi a <em>'+s.n+'</em></strong><p>'+s.d+' &mdash; cosi spezzi le '+ore(t)+' di guida.</p><a class="bk" href="'+bk+'" target="_blank" rel="noopener">Hotel a '+s.n+' &rarr;</a><a class="bk" href="'+maps+'" target="_blank" rel="noopener">Ristoranti &rarr;</a>';box.style.display="block";}
+function tripHtml(tit,cls,da,a,km,h,carb,ped,tot){return '<h3 class="'+cls+'">'+tit+'</h3><div class="leg"><span class="n">'+da+' &rarr; '+a+'</span></div><div class="stat"><span class="k">Distanza</span><span class="v">'+Math.round(km)+' km</span></div><div class="stat"><span class="k">Tempo guida</span><span class="v">'+ore(h)+'</span></div><div class="stat"><span class="k">Diesel</span><span class="v">'+eur(carb)+'</span></div><div class="stat"><span class="k">Pedaggi+vignetta</span><span class="v">'+eur(ped)+'</span></div><div class="sub-total"><span class="k">Costo tratta</span><span class="v">'+eur(tot)+'</span></div>';}
+function showErr(m){var e=document.getElementById("err");e.textContent=m;e.className="err show";}
+function calcola(){
+  if(ORS_KEY==="INCOLLA_QUI_LA_TUA_CHIAVE"){showErr("Chiave ORS non inserita nel codice.");return;}
+  var from=document.getElementById("from").value,to=document.getElementById("to").value;
+  if(!from||!to){showErr("Inserisci partenza e destinazione.");return;}
+  var ci=document.getElementById("checkin").value,co=document.getElementById("checkout").value;
+  var adults=+document.getElementById("adults").value||1,children=+document.getElementById("children").value||0;
+  var consumo=+document.getElementById("consumo").value||6.5,prezzo=+document.getElementById("prezzo").value||1.65;
+  var ped=+document.getElementById("pedaggio1").value||0,soglia=+document.getElementById("sogliaSosta").value||6;
+  var tipoRit=document.getElementById("ritornoTipo").value,via=document.getElementById("ritornoVia").value;
+  var pax=adults+children,kidAges=getKidAges();
+  document.getElementById("err").className="err";document.getElementById("results").className="results";
+  document.getElementById("loading").className="loading show";document.getElementById("goBtn").disabled=true;
+  var cFrom,cTo,cVia;
+  geocode(from).then(function(c){cFrom=c;return geocode(to);}).then(function(c){cTo=c;if(tipoRit==="tappa"&&via)return geocode(via).then(function(c){cVia=c;});}).then(function(){return route(cFrom,cTo);}).then(function(rA){
+    var carbA=rA.km*consumo/100*prezzo,totA=carbA+ped;
+    document.getElementById("tripAndata").innerHTML=tripHtml("Andata","",from,to,rA.km,rA.h,carbA,ped,totA);
+    if(rA.h>soglia)renderSosta("sostaAndata",cFrom,cTo,rA.h,adults,children);else document.getElementById("sostaAndata").style.display="none";
+    var pRit;
+    if(tipoRit==="tappa"&&cVia){
+      pRit=Promise.all([route(cTo,cVia),route(cVia,cFrom)]).then(function(arr){
+        var r1=arr[0],r2=arr[1],kmT=r1.km+r2.km;var carbR=kmT*consumo/100*prezzo,pedR=ped*2,totR=carbR+pedR;
+        document.getElementById("tripRitorno").innerHTML='<h3 class="ret">Ritorno via '+via+'</h3><div class="leg"><span class="n">'+to+' &rarr; '+via+'</span> &middot; '+Math.round(r1.km)+' km &middot; '+ore(r1.h)+'</div><div class="leg"><span class="n">'+via+' &rarr; '+from+'</span> &middot; '+Math.round(r2.km)+' km &middot; '+ore(r2.h)+'</div><div class="stat"><span class="k">Distanza totale</span><span class="v">'+Math.round(kmT)+' km</span></div><div class="stat"><span class="k">Diesel</span><span class="v">'+eur(carbR)+'</span></div><div class="stat"><span class="k">Pedaggi (2 tratte)</span><span class="v">'+eur(pedR)+'</span></div><div class="sub-total"><span class="k">Costo ritorno</span><span class="v">'+eur(totR)+'</span></div>';
+        document.getElementById("tripRitorno").style.display="block";
+        if(r2.h>soglia)renderSosta("sostaRitorno",cVia,cFrom,r2.h,adults,children);else document.getElementById("sostaRitorno").style.display="none";
+        return {tot:totR,km:kmT};
+      });
+    } else {
+      var carbR2=rA.km*consumo/100*prezzo,totR2=carbR2+ped;
+      document.getElementById("tripRitorno").innerHTML=tripHtml("Ritorno","ret",to,from,rA.km,rA.h,carbR2,ped,totR2);
+      document.getElementById("sostaRitorno").style.display="none";
+      pRit=Promise.resolve({tot:totR2,km:rA.km});
+    }
+    return pRit.then(function(R){
+      var totale=totA+R.tot,kmTot=rA.km+R.km;
+      document.getElementById("grandtotal").innerHTML='<div class="label">Costo auto andata + ritorno</div><div class="big">'+eur(totale)+'</div><div class="desc">'+Math.round(kmTot)+' km totali &middot; solo diesel e pedaggi'+(kidAges.length?' &middot; bimbi: '+kidAges.join(", ")+' anni':'')+'</div>';
+      var distA=hav(cFrom,cTo);
+      var fasce=function(base){var t=adults*base;if(kidAges.length){for(var i=0;i<kidAges.length;i++)t+=kidAges[i]<2?0:kidAges[i]<12?base*0.7:base;}else t+=children*base;return Math.round(t);};
+      var trenoPP=Math.max(40,Math.round(distA*0.13*2)),treno=fasce(trenoPP),tT=(distA/110)+1.5;
+      var voloPP=Math.max(50,Math.round((40+distA*0.06)*2)),volo=fasce(voloPP),tV=(distA/700)+3.5;
+      document.getElementById("altTreno").innerHTML='<div class="m treno">Treno (a/r)</div><div class="c">~'+eur(treno)+'</div><div class="t">~'+ore(tT)+' a tratta</div>';
+      document.getElementById("altVolo").innerHTML='<div class="m volo">Volo (a/r)</div><div class="c">~'+eur(volo)+'</div><div class="t">~'+ore(tV)+' porta a porta</div>';
+      var bk='https://www.booking.com/searchresults.it.html?ss='+encodeURIComponent(to)+'&group_adults='+adults+'&group_children='+children+'&no_rooms=1';
+      if(ci)bk+='&checkin='+ci;if(co)bk+='&checkout='+co;if(kidAges.length)bk+='&age='+kidAges.join('&age=');
+      document.getElementById("lkHotel").href=bk;
+      document.getElementById("lkTreno").href='https://www.thetrainline.com/it?origin='+encodeURIComponent(from)+'&destination='+encodeURIComponent(to);
+      document.getElementById("lkVoloG").href='https://www.google.com/travel/flights?q='+encodeURIComponent("voli da "+from+" a "+to+(ci?" il "+ci:"")+(co?" ritorno "+co:""));
+      document.getElementById("lkMaps").href='https://www.google.com/maps/dir/'+encodeURIComponent(from)+'/'+encodeURIComponent(to);
+      document.getElementById("note").innerHTML='Chilometri e tempi: percorso stradale reale via OpenRouteService. Treno e volo: stime orientative con sconto bimbi (0-1 gratis, 2-11 ridotto). Per i ristoranti reali della sosta scrivimi in chat la tratta.';
+      document.getElementById("loading").className="loading";document.getElementById("goBtn").disabled=false;
+      document.getElementById("results").className="results show";
+      document.getElementById("results").scrollIntoView({behavior:"smooth"});
+    });
+  }).catch(function(e){document.getElementById("loading").className="loading";document.getElementById("goBtn").disabled=false;showErr("Errore: "+e.message+". Controlla i nomi delle citta (aggiungi la nazione, es. Crema, Italia) o la chiave ORS.");});
+}
+</script>
+</body>
+</html>
